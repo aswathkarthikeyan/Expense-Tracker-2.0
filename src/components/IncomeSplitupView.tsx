@@ -6,7 +6,7 @@ import {
   BarChart3,
   Table2,
   Trash2,
-} from 'lucide-react';
+} from './Icons';
 import {
   formatINR,
   type CategorySplitItem,

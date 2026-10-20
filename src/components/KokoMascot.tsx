@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Volume2 } from 'lucide-react';
+import { Sparkles, Volume2 } from './Icons';
 import {
   formatINR,
   type FinancialSummary,

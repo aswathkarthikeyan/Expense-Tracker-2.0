@@ -18,10 +18,15 @@ export default defineConfig(() => {
       {
         name: 'cloudflare-no-rocket-loader',
         transformIndexHtml(html) {
-          return html.replace(
-            /<script type="module"/g,
-            '<script type="module" data-cfasync="false"'
-          );
+          return html
+            .replace(
+              /<script type="module" crossorigin/g,
+              '<script type="module" data-cfasync="false"'
+            )
+            .replace(
+              /<link rel="stylesheet" crossorigin/g,
+              '<link rel="stylesheet"'
+            );
         },
       },
     ],

@@ -22,9 +22,41 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@500;600;700&family=Noto+Sans:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./koko-bundle.css" />
   </head>
   <body class="bg-[#F6F5F0] text-[#141518] antialiased selection:bg-[#10B981]/20">
     <div id="root"></div>
     <script type="module" data-cfasync="false" src="/src/main.tsx"></script>
+    <script data-cfasync="false">
+      (function () {
+        var booted = false;
+        function mountFallback() {
+          if (booted || window.__KOKO_MOUNTED__) return;
+          var root = document.getElementById('root');
+          if (root && root.getAttribute('data-koko-rendered') === 'true') return;
+          booted = true;
+          var s = document.createElement('script');
+          s.setAttribute('data-cfasync', 'false');
+          s.src = './koko-bundle.js';
+          s.onerror = function () {
+            var s2 = document.createElement('script');
+            s2.setAttribute('data-cfasync', 'false');
+            s2.src = './public/koko-bundle.js';
+            document.body.appendChild(s2);
+          };
+          document.body.appendChild(s);
+        }
+        window.addEventListener(
+          'error',
+          function (e) {
+            if (e && e.target && e.target.tagName === 'SCRIPT') {
+              setTimeout(mountFallback, 10);
+            }
+          },
+          true
+        );
+        setTimeout(mountFallback, 450);
+      })();
+    </script>
   </body>
 </html>

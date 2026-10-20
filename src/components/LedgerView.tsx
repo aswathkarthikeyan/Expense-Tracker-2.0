@@ -7,7 +7,7 @@ import {
   Plus,
   Download,
   RotateCcw,
-} from 'lucide-react';
+} from './Icons';
 import {
   formatINR,
   type ExpenseCategoryConfig,

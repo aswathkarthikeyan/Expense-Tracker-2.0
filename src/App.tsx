@@ -13,7 +13,7 @@ import {
   Plus,
   Trash2,
   ChevronRight,
-} from 'lucide-react';
+} from './components/Icons';
 import {
   DEFAULT_EXPENSE_CATEGORIES,
   DEFAULT_INCOME_SOURCES,

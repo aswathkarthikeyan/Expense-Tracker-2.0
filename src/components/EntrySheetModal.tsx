@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { X, ArrowUpRight, ArrowDownRight } from './Icons';
 import {
   validateLedgerInput,
   type ExpenseCategoryConfig,
