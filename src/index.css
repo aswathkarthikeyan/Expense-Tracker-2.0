@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-canvas: #F6F5F0;
+    --bg-surface: #FFFFFF;
+    --bg-subtle: #EFECE6;
+    --text-primary: #141518;
+    --text-secondary: #5A5D65;
+    --border-hairline: rgba(20, 21, 24, 0.08);
+    --accent-emerald: #10B981;
+    --accent-coral: #F43F5E;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    -webkit-tap-highlight-color: transparent;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .font-mono-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes popCelebrate {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.08) rotate(-3deg);
+  }
+  70% {
+    transform: scale(1.05) rotate(3deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-mascot-float {
+  animation: floatSlow 3.6s ease-in-out infinite;
+}
+
+.animate-mascot-celebrate {
+  animation: popCelebrate 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-mascot-float,
+  .animate-mascot-celebrate {
+    animation: none;
+  }
+}

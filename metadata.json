@@ -1,0 +1,6 @@
+{
+  "name": "Koko — iOS 27 Salary & Expense PWA",
+  "description": "A new-age mascot-driven salary, multi-income source splitup, and expense tracker crafted for iPhone PWA on iOS 27.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

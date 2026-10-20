@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="128" fill="#141518"/>
+  <circle cx="256" cy="272" r="148" fill="#10B981"/>
+  <ellipse cx="256" cy="285" rx="116" ry="102" fill="#ECFDF5"/>
+  <!-- Cute sprout on Koko's head -->
+  <path d="M256 124C256 96 286 78 308 88C298 112 276 124 256 124Z" fill="#34D399"/>
+  <path d="M256 124C256 98 228 82 208 92C216 114 238 124 256 124Z" fill="#6EE7B7"/>
+  <path d="M256 132V104" stroke="#10B981" stroke-width="10" stroke-linecap="round"/>
+  <!-- Eyes -->
+  <circle cx="212" cy="268" r="18" fill="#141518"/>
+  <circle cx="300" cy="268" r="18" fill="#141518"/>
+  <circle cx="218" cy="262" r="6" fill="#FFFFFF"/>
+  <circle cx="306" cy="262" r="6" fill="#FFFFFF"/>
+  <!-- Rosy cheeks -->
+  <ellipse cx="182" cy="288" rx="16" ry="10" fill="#F43F5E" fill-opacity="0.35"/>
+  <ellipse cx="330" cy="288" rx="16" ry="10" fill="#F43F5E" fill-opacity="0.35"/>
+  <!-- Happy smile -->
+  <path d="M236 292C242 304 270 304 276 292" stroke="#141518" stroke-width="10" stroke-linecap="round"/>
+</svg>
