@@ -1,14 +1,33 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import { fileURLToPath } from 'url';
+import { defineConfig } from 'vite';
+
+const currentDir =
+  typeof import.meta.dirname === 'string'
+    ? import.meta.dirname
+    : path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    base: './',
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'cloudflare-no-rocket-loader',
+        transformIndexHtml(html) {
+          return html.replace(
+            /<script type="module"/g,
+            '<script type="module" data-cfasync="false"'
+          );
+        },
+      },
+    ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(currentDir, '.'),
       },
     },
     server: {

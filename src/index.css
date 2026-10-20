@@ -13,7 +13,7 @@
   }
 
   body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Noto Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: var(--bg-canvas);
     color: var(--text-primary);
     -webkit-tap-highlight-color: transparent;
@@ -22,11 +22,11 @@
   }
 
   h1, h2, h3, .font-display {
-    font-family: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Bricolage Grotesque', 'Noto Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   .font-mono-num {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Noto Sans', monospace;
     font-variant-numeric: tabular-nums;
   }
 }

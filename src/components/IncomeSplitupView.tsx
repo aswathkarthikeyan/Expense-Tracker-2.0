@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
 import {
-  Plus,
   ArrowUpRight,
-  ArrowDownRight,
   ChevronDown,
   ChevronUp,
-  Layers,
-  PieChart,
+  BarChart3,
+  Table2,
   Trash2,
 } from 'lucide-react';
 import {
-  formatCurrency,
+  formatINR,
   type CategorySplitItem,
   type FinancialSummary,
-  type IncomeSourceConfig,
   type SourceSplitItem,
 } from '../utils/finance';
 
@@ -21,170 +18,143 @@ interface IncomeSplitupViewProps {
   summary: FinancialSummary;
   incomeSplit: SourceSplitItem[];
   expenseSplit: CategorySplitItem[];
-  incomeSources: IncomeSourceConfig[];
-  currencySymbol: string;
   onQuickLogToSource: (sourceId: string) => void;
-  onAddCustomSource: (source: IncomeSourceConfig) => void;
   onDeleteEntry: (id: string) => void;
 }
-
-const SWATCH_COLORS = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EC4899', '#14B8A6'];
 
 export const IncomeSplitupView: React.FC<IncomeSplitupViewProps> = ({
   summary,
   incomeSplit,
   expenseSplit,
-  currencySymbol,
   onQuickLogToSource,
-  onAddCustomSource,
   onDeleteEntry,
 }) => {
   const [expandedSourceId, setExpandedSourceId] = useState<string | null>(
-    incomeSplit.find((s) => s.totalAmount > 0)?.sourceId || null
+    incomeSplit[0]?.sourceId || 'src-stipend'
   );
-  const [showAddSourcePanel, setShowAddSourcePanel] = useState(false);
-  const [customName, setCustomName] = useState('');
-  const [customTag, setCustomTag] = useState('Side Stream');
-  const [customColor, setCustomColor] = useState(SWATCH_COLORS[2]);
 
   const activeIncomeSplit = incomeSplit.filter((s) => s.totalAmount > 0);
-  const inactiveIncomeSplit = incomeSplit.filter((s) => s.totalAmount === 0);
-
-  const handleCreateSource = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customName.trim()) return;
-    onAddCustomSource({
-      id: `src-${Date.now()}`,
-      name: customName.trim(),
-      tag: customTag.trim() || 'Custom',
-      color: customColor,
-    });
-    setCustomName('');
-    setShowAddSourcePanel(false);
-  };
+  const activeExpenseSplit = expenseSplit.filter((c) => c.totalAmount > 0);
+  const maxSourceEarned = Math.max(1, ...incomeSplit.map((s) => s.totalAmount));
 
   // Calculate SVG Donut segments for active income sources
-  const radius = 56;
+  const radius = 54;
   const circumference = 2 * Math.PI * radius;
   let cumulativePercent = 0;
 
   return (
     <div className="space-y-6">
-      {/* Header & Summary Banner */}
-      <div className="rounded-3xl bg-white border border-black/10 p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs text-[#5A5D65]">
-              <span>Multi-Income Architecture</span>
-              <span aria-hidden="true">·</span>
-              <span>{summary.activeSourcesCount} Active Streams</span>
-            </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#141518] mt-1">
-              Income Sources Splitup
-            </h1>
-            <p className="text-xs sm:text-sm text-[#5A5D65] mt-1 max-w-xl">
-              Every paycheck, retainer, side project, and yield stream broken down by share of your{' '}
-              <span className="font-mono-num font-semibold text-[#141518]">
-                {formatCurrency(summary.totalEarned, currencySymbol)}
-              </span>{' '}
-              total earned.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowAddSourcePanel((prev) => !prev)}
-            className="min-h-[44px] px-4 py-2 rounded-2xl bg-[#141518] text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-[#272930] transition-colors cursor-pointer shrink-0 whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4 text-[#10B981]" />
-            <span>Add Income Stream</span>
-          </button>
+      {/* Section 1: Header & Stipend / Consulting Stream Cards */}
+      <div className="space-y-4">
+        <div className="px-1">
+          <h1 className="font-display text-2xl font-bold text-[#141518]">
+            Stipend &amp; Consulting Splitup
+          </h1>
+          <p className="text-xs text-[#5A5D65] mt-0.5">
+            Breakdown of your two income streams, expenses deducted per stream, and net balance left in INR
+          </p>
         </div>
 
-        {/* Inline Add New Income Stream Form */}
-        {showAddSourcePanel && (
-          <form
-            onSubmit={handleCreateSource}
-            className="mt-5 p-4 rounded-2xl bg-[#F6F5F0] border border-black/10 space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#141518]">
-                Register a New Income Source
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowAddSourcePanel(false)}
-                className="text-xs text-[#5A5D65] hover:text-[#141518]"
-              >
-                Close
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="new-source-name" className="block text-xs text-[#5A5D65] mb-1">
-                  Source Name
-                </label>
-                <input
-                  id="new-source-name"
-                  type="text"
-                  required
-                  placeholder="e.g. App Store Revenue, Advisory"
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  className="w-full min-h-[44px] px-3.5 rounded-xl bg-white border border-black/10 text-sm text-[#141518]"
-                />
-              </div>
-              <div>
-                <label htmlFor="new-source-tag" className="block text-xs text-[#5A5D65] mb-1">
-                  Stream Type
-                </label>
-                <input
-                  id="new-source-tag"
-                  type="text"
-                  placeholder="e.g. Passive, Freelance, Salary"
-                  value={customTag}
-                  onChange={(e) => setCustomTag(e.target.value)}
-                  className="w-full min-h-[44px] px-3.5 rounded-xl bg-white border border-black/10 text-sm text-[#141518]"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-2">
-                {SWATCH_COLORS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setCustomColor(color)}
-                    aria-label={`Pick color ${color}`}
-                    className={`w-6 h-6 rounded-full transition-transform ${
-                      customColor === color ? 'scale-110 ring-2 ring-[#141518]' : ''
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
-              <button
-                type="submit"
-                className="min-h-[40px] px-4 py-2 rounded-xl bg-[#10B981] text-white text-xs font-semibold cursor-pointer"
-              >
-                Create Stream
-              </button>
-            </div>
-          </form>
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {incomeSplit.map((src) => (
+            <div
+              key={src.sourceId}
+              className="rounded-3xl bg-white border border-black/10 p-5 sm:p-6 space-y-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full shrink-0"
+                      style={{ backgroundColor: src.color }}
+                    />
+                    <h2 className="font-display text-lg font-bold text-[#141518]">
+                      {src.name}
+                    </h2>
+                  </div>
+                  <p className="text-xs text-[#5A5D65] mt-0.5">
+                    {src.entryCount} {src.entryCount === 1 ? 'payout' : 'payouts'} ·{' '}
+                    {src.percentageOfIncome}% of total earned
+                  </p>
+                </div>
 
-        {/* Visual Multi-Source Ring & Stacked Proportion Bar */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-5 border-t border-black/5">
-          {/* SVG Donut Chart */}
-          <div className="md:col-span-4 flex flex-col items-center justify-center">
-            <div className="relative w-36 h-36 flex items-center justify-center">
-              <svg className="w-36 h-36 -rotate-90" viewBox="0 0 140 140">
+                <button
+                  type="button"
+                  onClick={() => onQuickLogToSource(src.sourceId)}
+                  className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#141518] hover:bg-[#272930] text-white text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+                >
+                  <ArrowUpRight className="w-3.5 h-3.5 text-[#10B981]" />
+                  <span>+ Add {src.name}</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-black/6">
+                <div>
+                  <span className="text-[11px] text-[#5A5D65] block">Earned</span>
+                  <span className="font-mono-num text-sm sm:text-base font-bold text-[#047857]">
+                    {formatINR(src.totalAmount)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-[#5A5D65] block">Spent</span>
+                  <span className="font-mono-num text-sm sm:text-base font-bold text-[#BE123C]">
+                    {src.expensesFunded > 0 ? `-${formatINR(src.expensesFunded)}` : '₹0'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-[#5A5D65] block">Net Left</span>
+                  <span className="font-mono-num text-sm sm:text-base font-bold text-[#141518]">
+                    {formatINR(src.netBalance)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Section 2: Visual Graphs (Comparative Bar Graph + Donut Distribution) */}
+      <section
+        aria-label="Income sources visual graphs"
+        className="rounded-3xl bg-white border border-black/10 p-6 space-y-6"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="font-display text-lg font-bold text-[#141518] flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-[#10B981]" />
+              <span>Stipend vs. Consulting Cashflow Graph</span>
+            </h2>
+            <p className="text-xs text-[#5A5D65] mt-0.5">
+              Earned inflow compared against expenses deducted in INR
+            </p>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-[#5A5D65]">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-xs bg-[#10B981]" />
+              Stipend
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-xs bg-[#3B82F6]" />
+              Consulting
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-xs bg-[#F43F5E]" />
+              Expenses Deducted
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          {/* Left: SVG Donut Chart */}
+          <div className="lg:col-span-4 flex flex-col items-center justify-center p-4 rounded-2xl bg-[#F6F5F0]">
+            <div className="relative w-40 h-40 flex items-center justify-center">
+              <svg className="w-40 h-40 -rotate-90" viewBox="0 0 140 140">
                 <circle
                   cx="70"
                   cy="70"
                   r={radius}
                   fill="transparent"
-                  stroke="#EFECE6"
+                  stroke="#E5E2DC"
                   strokeWidth="16"
                 />
                 {activeIncomeSplit.map((src) => {
@@ -212,287 +182,299 @@ export const IncomeSplitupView: React.FC<IncomeSplitupViewProps> = ({
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
                 <span className="text-[11px] font-medium text-[#5A5D65]">Total Earned</span>
                 <span className="font-mono-num text-sm font-bold text-[#141518]">
-                  {formatCurrency(summary.totalEarned, currencySymbol)}
+                  {formatINR(summary.totalEarned)}
+                </span>
+                <span className="text-[10px] text-[#047857] font-semibold mt-0.5">
+                  {summary.retentionRatio}% kept
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Stacked Bar & Top Source Highlights */}
-          <div className="md:col-span-8 space-y-4">
-            <div>
-              <div className="flex items-center justify-between text-xs text-[#5A5D65] mb-2">
-                <span>Proportional Source Distribution</span>
-                <span className="font-mono-num font-semibold text-[#141518]">100% Portfolio</span>
-              </div>
-              <div className="h-4 w-full rounded-full bg-[#EFECE6] overflow-hidden flex p-0.5 gap-0.5">
-                {activeIncomeSplit.length > 0 ? (
-                  activeIncomeSplit.map((item) => (
+          {/* Right: Multi-Bar Comparative Graph */}
+          <div className="lg:col-span-8 space-y-4">
+            {incomeSplit.map((src) => {
+              const earnedWidthPct =
+                summary.totalEarned > 0 && src.totalAmount > 0
+                  ? Math.max(4, Math.round((src.totalAmount / maxSourceEarned) * 100))
+                  : 0;
+              const spentWidthPct =
+                src.totalAmount > 0
+                  ? Math.min(100, Math.round((src.expensesFunded / maxSourceEarned) * 100))
+                  : 0;
+
+              return (
+                <div key={src.sourceId} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="w-2.5 h-2.5 rounded-xs shrink-0"
+                        style={{ backgroundColor: src.color }}
+                      />
+                      <span className="font-semibold text-[#141518] truncate">{src.name}</span>
+                      <span aria-hidden="true" className="text-black/30">·</span>
+                      <span className="text-[#5A5D65] font-mono-num">{src.percentageOfIncome}%</span>
+                    </div>
+                    <div className="font-mono-num text-xs flex items-center gap-3 shrink-0">
+                      <span className="font-bold text-[#141518]">{formatINR(src.totalAmount)}</span>
+                      {src.expensesFunded > 0 && (
+                        <span className="text-[#BE123C]">-{formatINR(src.expensesFunded)}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Dual Horizontal Bar Graph (Earned vs Expenses Deducted) */}
+                  <div className="h-3.5 w-full rounded-lg bg-[#F6F5F0] overflow-hidden relative">
                     <div
-                      key={item.sourceId}
+                      className="h-full rounded-lg transition-all duration-300"
                       style={{
-                        width: `${Math.max(item.percentageOfIncome, 3)}%`,
-                        backgroundColor: item.color,
+                        width: `${earnedWidthPct}%`,
+                        backgroundColor: src.color,
                       }}
-                      className="h-full first:rounded-l-full last:rounded-r-full transition-all duration-300"
-                      title={`${item.name}: ${item.percentageOfIncome}%`}
                     />
-                  ))
-                ) : (
-                  <div className="h-full w-full bg-black/10 rounded-full" />
-                )}
-              </div>
-            </div>
-
-            {/* Compact Legend Matrix */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {activeIncomeSplit.map((item) => (
-                <div
-                  key={item.sourceId}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-[#F6F5F0] border border-black/5"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span
-                      className="w-3 h-3 rounded-sm shrink-0"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-[#141518] truncate">{item.name}</p>
-                      <p className="text-[11px] text-[#5A5D65]">
-                        {item.tag} · {item.entryCount} {item.entryCount === 1 ? 'payout' : 'payouts'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0 pl-2">
-                    <p className="font-mono-num text-xs font-bold text-[#141518]">
-                      {formatCurrency(item.totalAmount, currencySymbol)}
-                    </p>
-                    <p className="font-mono-num text-[11px] font-semibold text-[#047857]">
-                      {item.percentageOfIncome}%
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Detailed Per-Source Splitup Cards */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="font-display text-lg font-bold text-[#141518] flex items-center gap-2">
-            <Layers className="w-5 h-5 text-[#10B981]" />
-            <span>Income Stream Breakdown ({incomeSplit.length})</span>
-          </h2>
-          <span className="text-xs text-[#5A5D65]">Tap any stream to inspect payouts</span>
-        </div>
-
-        {incomeSplit.map((source) => {
-          const isExpanded = expandedSourceId === source.sourceId;
-          return (
-            <div
-              key={source.sourceId}
-              className="rounded-3xl bg-white border border-black/10 overflow-hidden transition-all"
-            >
-              <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setExpandedSourceId(isExpanded ? null : source.sourceId)
-                  }
-                  className="flex-1 flex items-center justify-between text-left cursor-pointer"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div
-                      className="w-11 h-11 rounded-2xl flex items-center justify-center text-white font-mono-num text-xs font-bold shrink-0"
-                      style={{ backgroundColor: source.color }}
-                    >
-                      {Math.round(source.percentageOfIncome)}%
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-display text-base font-bold text-[#141518] truncate">
-                        {source.name}
-                      </h3>
-                      <div className="flex items-center gap-2 text-xs text-[#5A5D65] mt-0.5">
-                        <span>{source.tag}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>
-                          {source.entryCount} {source.entryCount === 1 ? 'entry' : 'entries'}
-                        </span>
-                        {source.entryCount > 0 && (
-                          <>
-                            <span aria-hidden="true">·</span>
-                            <span className="font-mono-num">
-                              Avg {formatCurrency(source.averageEntry, currencySymbol)}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 pl-3">
-                    <div className="text-right">
-                      <p className="font-mono-num text-base sm:text-lg font-bold text-[#141518]">
-                        {formatCurrency(source.totalAmount, currencySymbol)}
-                      </p>
-                      <p className="font-mono-num text-xs text-[#5A5D65]">
-                        {source.percentageOfIncome}% of total earned
-                      </p>
-                    </div>
-                    {isExpanded ? (
-                      <ChevronUp className="w-4 h-4 text-[#5A5D65]" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-[#5A5D65]" />
+                    {spentWidthPct > 0 && (
+                      <div
+                        className="absolute top-0 left-0 h-full bg-[#F43F5E]/85 border-r-2 border-white"
+                        style={{ width: `${spentWidthPct}%` }}
+                        title={`Expenses funded: ${formatINR(src.expensesFunded)}`}
+                      />
                     )}
                   </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onQuickLogToSource(source.sourceId)}
-                  aria-label={`Add income to ${source.name}`}
-                  className="min-h-[44px] px-3.5 py-2 rounded-xl bg-[#F6F5F0] hover:bg-[#EFECE6] text-xs font-semibold text-[#141518] flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
-                >
-                  <ArrowUpRight className="w-4 h-4 text-[#10B981]" />
-                  <span>+ Log Payout</span>
-                </button>
-              </div>
-
-              {/* Progress bar inside source card */}
-              <div className="px-5 pb-4">
-                <div className="h-2 w-full rounded-full bg-[#F6F5F0] overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{
-                      width: `${source.percentageOfIncome}%`,
-                      backgroundColor: source.color,
-                    }}
-                  />
                 </div>
-              </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
-              {/* Expanded Entries List */}
-              {isExpanded && (
-                <div className="bg-[#F6F5F0]/70 border-t border-black/5 px-5 py-4 space-y-2.5">
-                  {source.entries.length === 0 ? (
-                    <div className="flex items-center justify-between py-2 text-xs text-[#5A5D65]">
-                      <span>No payouts recorded for {source.name} in this period yet.</span>
-                      <button
-                        type="button"
-                        onClick={() => onQuickLogToSource(source.sourceId)}
-                        className="font-semibold text-[#047857] underline cursor-pointer"
-                      >
-                        Add first payout
-                      </button>
-                    </div>
-                  ) : (
-                    source.entries.map((entry) => (
-                      <div
-                        key={entry.id}
-                        className="flex items-center justify-between p-3 rounded-2xl bg-white border border-black/5"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-[#141518] truncate">{entry.title}</p>
-                          <div className="flex items-center gap-2 text-[11px] text-[#5A5D65] mt-0.5">
-                            <span className="font-mono-num">{entry.date}</span>
-                            {entry.note && (
-                              <>
-                                <span aria-hidden="true">·</span>
-                                <span className="truncate">{entry.note}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0 pl-2">
-                          <span className="font-mono-num text-xs font-bold text-[#047857]">
-                            +{formatCurrency(entry.amount, currencySymbol)}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => onDeleteEntry(entry.id)}
-                            aria-label={`Delete ${entry.title}`}
-                            className="min-h-[36px] min-w-[36px] rounded-xl hover:bg-[#FFF1F2] text-[#5A5D65] hover:text-[#BE123C] flex items-center justify-center transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {inactiveIncomeSplit.length > 0 && activeIncomeSplit.length > 0 && (
-          <p className="text-xs text-[#5A5D65] px-2">
-            {inactiveIncomeSplit.length} configured income{' '}
-            {inactiveIncomeSplit.length === 1 ? 'source has' : 'sources have'} $0 logged in the
-            selected period.
-          </p>
-        )}
-      </div>
-
-      {/* Expense Category Splitup & Net Retention Comparison */}
-      <div className="rounded-3xl bg-white border border-black/10 p-6 space-y-5">
-        <div className="flex items-center justify-between">
+      {/* Section 3: Structured Income Sources Splitup Table */}
+      <section
+        aria-label="Income sources splitup table"
+        className="rounded-3xl bg-white border border-black/10 overflow-hidden"
+      >
+        <div className="p-6 pb-4 flex flex-wrap items-center justify-between gap-2 border-b border-black/6">
           <div>
             <h2 className="font-display text-lg font-bold text-[#141518] flex items-center gap-2">
-              <PieChart className="w-5 h-5 text-[#F43F5E]" />
-              <span>Where Expenses Go vs. Total Earned</span>
+              <Table2 className="w-5 h-5 text-[#10B981]" />
+              <span>Income Sources Splitup Table</span>
             </h2>
             <p className="text-xs text-[#5A5D65] mt-0.5">
-              Outflow split across categories compared against your{' '}
-              {formatCurrency(summary.totalEarned, currencySymbol)} total income.
+              Click Stipend or Consulting to inspect individual payouts or log a new inflow
             </p>
           </div>
-          <div className="text-right">
-            <span className="text-xs text-[#5A5D65]">Total Spent</span>
-            <p className="font-mono-num text-base font-bold text-[#BE123C]">
-              -{formatCurrency(summary.totalSpent, currencySymbol)}
-            </p>
-          </div>
+          <span className="font-mono-num text-xs font-semibold text-[#141518]">
+            Net Balance: {formatINR(summary.balanceLeft)}
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {expenseSplit
-            .filter((c) => c.totalAmount > 0)
-            .map((cat) => (
-              <div
-                key={cat.categoryId}
-                className="p-4 rounded-2xl bg-[#F6F5F0] border border-black/5 space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ArrowDownRight className="w-4 h-4" style={{ color: cat.color }} />
-                    <span className="text-xs font-bold text-[#141518]">{cat.name}</span>
-                  </div>
-                  <span className="font-mono-num text-xs font-bold text-[#141518]">
-                    {formatCurrency(cat.totalAmount, currencySymbol)}
-                  </span>
-                </div>
-                <div className="h-1.5 w-full rounded-full bg-black/10 overflow-hidden">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${cat.percentageOfExpenses}%`,
-                      backgroundColor: cat.color,
-                    }}
-                  />
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-[#5A5D65]">
-                  <span>
-                    {cat.entryCount} {cat.entryCount === 1 ? 'expense' : 'expenses'}
-                  </span>
-                  <span className="font-mono-num">{cat.percentageOfExpenses}% of outflow</span>
-                </div>
-              </div>
-            ))}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-black/8 bg-[#F6F5F0]/60 text-[11px] font-semibold text-[#5A5D65]">
+                <th className="py-3.5 pl-6 pr-3">Income Source</th>
+                <th className="py-3.5 px-3 text-right">Payouts</th>
+                <th className="py-3.5 px-3 text-right">Total Earned</th>
+                <th className="py-3.5 px-3 text-right">Expenses Funded</th>
+                <th className="py-3.5 px-3 text-right">Net Retained</th>
+                <th className="py-3.5 px-3 text-right">Share</th>
+                <th className="py-3.5 pl-3 pr-6 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/6 text-xs">
+              {incomeSplit.map((source) => {
+                const isExpanded = expandedSourceId === source.sourceId;
+                return (
+                  <React.Fragment key={source.sourceId}>
+                    <tr className="hover:bg-[#F6F5F0]/50 transition-colors">
+                      <td className="py-3.5 pl-6 pr-3 font-bold text-[#141518]">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpandedSourceId(isExpanded ? null : source.sourceId)
+                          }
+                          className="flex items-center gap-2.5 text-left cursor-pointer"
+                        >
+                          <span
+                            className="w-3 h-3 rounded-xs shrink-0"
+                            style={{ backgroundColor: source.color }}
+                          />
+                          <span>{source.name}</span>
+                          {isExpanded ? (
+                            <ChevronUp className="w-3.5 h-3.5 text-[#5A5D65]" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5 text-[#5A5D65]" />
+                          )}
+                        </button>
+                      </td>
+                      <td className="py-3.5 px-3 text-right font-mono-num text-[#141518]">
+                        {source.entryCount}
+                      </td>
+                      <td className="py-3.5 px-3 text-right font-mono-num font-bold text-[#047857] whitespace-nowrap">
+                        {formatINR(source.totalAmount)}
+                      </td>
+                      <td className="py-3.5 px-3 text-right font-mono-num text-[#BE123C] whitespace-nowrap">
+                        {source.expensesFunded > 0 ? `-${formatINR(source.expensesFunded)}` : '₹0'}
+                      </td>
+                      <td className="py-3.5 px-3 text-right font-mono-num font-bold text-[#141518] whitespace-nowrap">
+                        {formatINR(source.netBalance)}
+                      </td>
+                      <td className="py-3.5 px-3 text-right font-mono-num font-semibold text-[#141518] whitespace-nowrap">
+                        {source.percentageOfIncome}%
+                      </td>
+                      <td className="py-3.5 pl-3 pr-6 text-right whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => onQuickLogToSource(source.sourceId)}
+                          aria-label={`Add income to ${source.name}`}
+                          className="min-h-[36px] px-3 py-1.5 rounded-xl bg-[#F6F5F0] hover:bg-[#EFECE6] text-xs font-semibold text-[#141518] inline-flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <ArrowUpRight className="w-3.5 h-3.5 text-[#10B981]" />
+                          <span>+ Log</span>
+                        </button>
+                      </td>
+                    </tr>
+
+                    {isExpanded && (
+                      <tr className="bg-[#F6F5F0]/50">
+                        <td colSpan={7} className="px-6 py-3.5">
+                          <div className="space-y-2">
+                            <p className="text-[11px] font-semibold text-[#5A5D65]">
+                              Recorded Payouts for {source.name} ({source.entries.length})
+                            </p>
+                            {source.entries.length === 0 ? (
+                              <p className="text-xs text-[#5A5D65]">
+                                No payouts recorded for {source.name} yet.
+                              </p>
+                            ) : (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {source.entries.map((entry) => (
+                                  <div
+                                    key={entry.id}
+                                    className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-black/6"
+                                  >
+                                    <div className="min-w-0">
+                                      <p className="text-xs font-bold text-[#141518] truncate">
+                                        {entry.title}
+                                      </p>
+                                      <p className="text-[11px] text-[#5A5D65] font-mono-num">
+                                        {entry.date} {entry.note ? `· ${entry.note}` : ''}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0 pl-2">
+                                      <span className="font-mono-num text-xs font-bold text-[#047857]">
+                                        +{formatINR(entry.amount)}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => onDeleteEntry(entry.id)}
+                                        aria-label={`Delete ${entry.title}`}
+                                        className="min-h-[32px] min-w-[32px] rounded-lg hover:bg-[#FFF1F2] text-[#5A5D65] hover:text-[#BE123C] flex items-center justify-center cursor-pointer"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-black/10 bg-[#F6F5F0]/80 font-mono-num text-xs font-bold text-[#141518]">
+                <td className="py-3.5 pl-6 pr-3 font-sans">Total (Stipend + Consulting)</td>
+                <td className="py-3.5 px-3 text-right">{summary.incomeCount}</td>
+                <td className="py-3.5 px-3 text-right text-[#047857]">
+                  {formatINR(summary.totalEarned)}
+                </td>
+                <td className="py-3.5 px-3 text-right text-[#BE123C]">
+                  {summary.totalSpent > 0 ? `-${formatINR(summary.totalSpent)}` : '₹0'}
+                </td>
+                <td className="py-3.5 px-3 text-right">{formatINR(summary.balanceLeft)}</td>
+                <td className="py-3.5 px-3 text-right">
+                  {summary.totalEarned > 0 ? '100%' : '0%'}
+                </td>
+                <td className="py-3.5 pl-3 pr-6" />
+              </tr>
+            </tfoot>
+          </table>
         </div>
-      </div>
+      </section>
+
+      {/* Section 4: Structured Expense Categories Breakdown Table */}
+      <section
+        aria-label="Expense categories breakdown table"
+        className="rounded-3xl bg-white border border-black/10 overflow-hidden"
+      >
+        <div className="p-6 pb-4 flex flex-wrap items-center justify-between gap-2 border-b border-black/6">
+          <div>
+            <h2 className="font-display text-lg font-bold text-[#141518]">
+              Expense Categories Breakdown Table
+            </h2>
+            <p className="text-xs text-[#5A5D65] mt-0.5">
+              Outflow distribution across categories and impact on total earned income
+            </p>
+          </div>
+          <span className="font-mono-num text-xs font-bold text-[#BE123C]">
+            Total Spent: {summary.totalSpent > 0 ? `-${formatINR(summary.totalSpent)}` : '₹0'}
+          </span>
+        </div>
+
+        {activeExpenseSplit.length === 0 ? (
+          <div className="p-8 text-center space-y-1">
+            <p className="text-sm font-semibold text-[#141518]">No expenses recorded yet</p>
+            <p className="text-xs text-[#5A5D65]">
+              When you log expenses, their category breakdown will appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-black/8 bg-[#F6F5F0]/60 text-[11px] font-semibold text-[#5A5D65]">
+                  <th className="py-3.5 pl-6 pr-3">Expense Category</th>
+                  <th className="py-3.5 px-3 text-right">Transactions</th>
+                  <th className="py-3.5 px-3 text-right">% of Expenses</th>
+                  <th className="py-3.5 px-3 text-right">% of Total Earned</th>
+                  <th className="py-3.5 pl-3 pr-6 text-right">Amount Spent (INR)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black/6 text-xs">
+                {activeExpenseSplit.map((cat) => (
+                  <tr key={cat.categoryId} className="hover:bg-[#F6F5F0]/50 transition-colors">
+                    <td className="py-3.5 pl-6 pr-3 font-bold text-[#141518]">
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className="w-3 h-3 rounded-xs shrink-0"
+                          style={{ backgroundColor: cat.color }}
+                        />
+                        <span>{cat.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-3 text-right font-mono-num text-[#5A5D65]">
+                      {cat.entryCount}
+                    </td>
+                    <td className="py-3.5 px-3 text-right font-mono-num text-[#141518]">
+                      {cat.percentageOfExpenses}%
+                    </td>
+                    <td className="py-3.5 px-3 text-right font-mono-num text-[#5A5D65]">
+                      {cat.percentageOfIncome}%
+                    </td>
+                    <td className="py-3.5 pl-3 pr-6 text-right font-mono-num font-bold text-[#BE123C] whitespace-nowrap">
+                      -{formatINR(cat.totalAmount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 };

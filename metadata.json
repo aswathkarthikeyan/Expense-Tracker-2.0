@@ -1,6 +1,6 @@
 {
-  "name": "Koko — iOS 27 Salary & Expense PWA",
-  "description": "A new-age mascot-driven salary, multi-income source splitup, and expense tracker crafted for iPhone PWA on iOS 27.",
+  "name": "Koko Vault — Salary & Expense Tracker",
+  "description": "Personal income and expense tracker in INR for Stipend and Consulting streams with graphs and breakdown tables.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

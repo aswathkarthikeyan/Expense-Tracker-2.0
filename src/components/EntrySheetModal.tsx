@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, ArrowUpRight, ArrowDownRight, Check } from 'lucide-react';
+import { X, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import {
   validateLedgerInput,
   type ExpenseCategoryConfig,
@@ -14,21 +14,9 @@ interface EntrySheetModalProps {
   preselectedSourceId?: string;
   incomeSources: IncomeSourceConfig[];
   expenseCategories: ExpenseCategoryConfig[];
-  currencySymbol: string;
   onClose: () => void;
   onSaveEntry: (entry: Omit<LedgerEntry, 'id'>) => void;
-  onAddCustomSource: (source: IncomeSourceConfig) => void;
 }
-
-const SOURCE_COLOR_SWATCHES = [
-  '#10B981',
-  '#3B82F6',
-  '#8B5CF6',
-  '#F59E0B',
-  '#EC4899',
-  '#14B8A6',
-  '#F43F5E',
-];
 
 export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
   isOpen,
@@ -36,60 +24,34 @@ export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
   preselectedSourceId,
   incomeSources,
   expenseCategories,
-  currencySymbol,
   onClose,
   onSaveEntry,
-  onAddCustomSource,
 }) => {
   const [entryType, setEntryType] = useState<TransactionType>(initialType);
   const [title, setTitle] = useState('');
   const [amountStr, setAmountStr] = useState('');
-  const [sourceId, setSourceId] = useState(preselectedSourceId || incomeSources[0]?.id || 'src-salary');
+  const [sourceId, setSourceId] = useState(
+    preselectedSourceId || incomeSources[0]?.id || 'src-stipend'
+  );
   const [categoryId, setCategoryId] = useState(expenseCategories[0]?.id || 'cat-housing');
-  const [date, setDate] = useState('2026-10-20');
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [note, setNote] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Inline custom income source creator state
-  const [showNewSourceForm, setShowNewSourceForm] = useState(false);
-  const [newSourceName, setNewSourceName] = useState('');
-  const [newSourceTag, setNewSourceTag] = useState('Side Stream');
-  const [newSourceColor, setNewSourceColor] = useState(SOURCE_COLOR_SWATCHES[0]);
 
   useEffect(() => {
     if (isOpen) {
       setEntryType(initialType);
       setTitle('');
       setAmountStr('');
-      setSourceId(preselectedSourceId || incomeSources[0]?.id || 'src-salary');
+      setSourceId(preselectedSourceId || incomeSources[0]?.id || 'src-stipend');
       setCategoryId(expenseCategories[0]?.id || 'cat-housing');
-      setDate('2026-10-20');
+      setDate(new Date().toISOString().slice(0, 10));
       setNote('');
       setErrorMsg(null);
-      setShowNewSourceForm(false);
     }
   }, [isOpen, initialType, preselectedSourceId, incomeSources, expenseCategories]);
 
   if (!isOpen) return null;
-
-  const handleCreateCustomSource = () => {
-    const trimmed = newSourceName.trim();
-    if (!trimmed) {
-      setErrorMsg('Please enter a name for the new income source.');
-      return;
-    }
-    const created: IncomeSourceConfig = {
-      id: `src-custom-${Date.now()}`,
-      name: trimmed,
-      tag: newSourceTag.trim() || 'Custom',
-      color: newSourceColor,
-    };
-    onAddCustomSource(created);
-    setSourceId(created.id);
-    setNewSourceName('');
-    setShowNewSourceForm(false);
-    setErrorMsg(null);
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,18 +86,16 @@ export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
       aria-labelledby="entry-modal-title"
     >
       <div className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl bg-[#F6F5F0] border border-black/10 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
-        {/* iOS 27 Grab Handle */}
         <div className="w-10 h-1.5 bg-black/15 rounded-full mx-auto mt-3 sm:hidden" />
 
-        {/* Modal Header */}
         <div className="flex items-center justify-between px-6 pt-4 pb-3 border-b border-black/5">
           <div>
             <h2 id="entry-modal-title" className="font-display text-lg font-bold text-[#141518]">
-              {entryType === 'income' ? 'Add Salary / Income Stream' : 'Log New Expense'}
+              {entryType === 'income' ? 'Add Income (Stipend / Consulting)' : 'Log New Expense'}
             </h2>
             <p className="text-xs text-[#5A5D65]">
               {entryType === 'income'
-                ? 'Tag the exact income source to update your splitup.'
+                ? 'Choose Stipend or Consulting to update your INR splitup.'
                 : 'Deducts immediately from your Balance Left.'}
             </p>
           </div>
@@ -149,9 +109,7 @@ export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
           </button>
         </div>
 
-        {/* Scrollable Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
-          {/* Segmented Mode Switcher */}
           <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#EFECE6] rounded-2xl">
             <button
               type="button"
@@ -166,7 +124,7 @@ export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
               }`}
             >
               <ArrowUpRight className="w-4 h-4 text-[#10B981]" />
-              <span>Salary / Income</span>
+              <span>Income</span>
             </button>
             <button
               type="button"
@@ -194,24 +152,23 @@ export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
             </div>
           )}
 
-          {/* Amount Input */}
           <div>
             <label
               htmlFor="entry-amount-input"
               className="block text-xs font-semibold text-[#5A5D65] mb-1.5"
             >
-              Amount ({currencySymbol})
+              Amount (₹ INR)
             </label>
             <div className="relative flex items-center">
               <span className="absolute left-4 font-mono-num text-xl font-bold text-[#5A5D65]">
-                {currencySymbol}
+                ₹
               </span>
               <input
                 id="entry-amount-input"
                 type="number"
                 step="0.01"
                 min="0.01"
-                placeholder="0.00"
+                placeholder="0"
                 value={amountStr}
                 onChange={(e) => setAmountStr(e.target.value)}
                 className="w-full min-h-[54px] pl-10 pr-4 rounded-2xl bg-white border border-black/10 font-mono-num text-2xl font-bold text-[#141518] focus:outline-2 focus:outline-[#141518]"
@@ -219,21 +176,20 @@ export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
             </div>
           </div>
 
-          {/* Title / Description Input */}
           <div>
             <label
               htmlFor="entry-title-input"
               className="block text-xs font-semibold text-[#5A5D65] mb-1.5"
             >
-              {entryType === 'income' ? 'Payout Title / Description' : 'Expense Title / Merchant'}
+              {entryType === 'income' ? 'Income Description' : 'Expense Title / Merchant'}
             </label>
             <input
               id="entry-title-input"
               type="text"
               placeholder={
                 entryType === 'income'
-                  ? 'e.g. October Tech Salary, Design Retainer, Dividend'
-                  : 'e.g. Studio Rent, Coffee & Lunch, Cloud Server'
+                  ? 'e.g. Monthly Stipend, Client Consulting Payout'
+                  : 'e.g. Rent, Groceries, Internet Bill'
               }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -241,92 +197,61 @@ export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
             />
           </div>
 
-          {/* Income Source Selector (Primary for Income, Funding Pool for Expense) */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor="entry-source-select"
-                className="block text-xs font-semibold text-[#5A5D65]"
-              >
-                {entryType === 'income'
-                  ? 'Income Source (Multiple Incomes Splitup)'
-                  : 'Deduct From Income Source'}
-              </label>
-              {!showNewSourceForm && (
-                <button
-                  type="button"
-                  onClick={() => setShowNewSourceForm(true)}
-                  className="text-xs font-semibold text-[#047857] hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>New Source</span>
-                </button>
-              )}
-            </div>
+            <label
+              htmlFor="entry-source-select"
+              className="block text-xs font-semibold text-[#5A5D65] mb-1.5"
+            >
+              {entryType === 'income'
+                ? 'Income Source (Stipend or Consulting)'
+                : 'Deduct From Source (Stipend or Consulting)'}
+            </label>
 
-            {showNewSourceForm ? (
-              <div className="p-4 rounded-2xl bg-white border border-black/15 space-y-3 mb-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#141518]">Create New Income Source</span>
+            {/* Quick 2-Source Selector Buttons */}
+            <div className="grid grid-cols-2 gap-2.5 mb-2">
+              {incomeSources.map((src) => {
+                const isSelected = sourceId === src.id;
+                return (
                   <button
+                    key={src.id}
                     type="button"
-                    onClick={() => setShowNewSourceForm(false)}
-                    className="text-xs text-[#5A5D65] hover:text-[#141518]"
+                    onClick={() => setSourceId(src.id)}
+                    className={`min-h-[46px] px-3.5 py-2.5 rounded-2xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-white border-[#141518] text-[#141518] ring-2 ring-[#141518]/15 shadow-xs'
+                        : 'bg-white/60 border-black/10 text-[#5A5D65] hover:text-[#141518]'
+                    }`}
                   >
-                    Cancel
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: src.color }}
+                      />
+                      <span>{src.name}</span>
+                    </span>
+                    {isSelected && (
+                      <span className="text-[10px] font-semibold text-[#047857]">Selected</span>
+                    )}
                   </button>
-                </div>
-                <input
-                  type="text"
-                  aria-label="New income source name"
-                  placeholder="e.g. YouTube AdSense, Consulting, Rental"
-                  value={newSourceName}
-                  onChange={(e) => setNewSourceName(e.target.value)}
-                  className="w-full min-h-[44px] px-3.5 rounded-xl bg-[#F6F5F0] border border-black/10 text-sm text-[#141518]"
-                />
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
-                    {SOURCE_COLOR_SWATCHES.map((swatch) => (
-                      <button
-                        key={swatch}
-                        type="button"
-                        onClick={() => setNewSourceColor(swatch)}
-                        aria-label={`Select color ${swatch}`}
-                        className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform ${
-                          newSourceColor === swatch ? 'scale-110 ring-2 ring-[#141518]' : ''
-                        }`}
-                        style={{ backgroundColor: swatch }}
-                      >
-                        {newSourceColor === swatch && <Check className="w-3.5 h-3.5 text-white" />}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCreateCustomSource}
-                    className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#141518] text-white text-xs font-semibold cursor-pointer"
-                  >
-                    Save Source
-                  </button>
-                </div>
-              </div>
-            ) : null}
+                );
+              })}
+            </div>
 
             <select
               id="entry-source-select"
               value={sourceId}
               onChange={(e) => setSourceId(e.target.value)}
-              className="w-full min-h-[48px] px-4 rounded-2xl bg-white border border-black/10 text-sm font-medium text-[#141518] focus:outline-2 focus:outline-[#141518]"
+              className="sr-only"
+              aria-label="Income Source"
             >
               {incomeSources.map((src) => (
                 <option key={src.id} value={src.id}>
-                  {src.name} ({src.tag})
+                  {src.name}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Expense Category Selector (Only when logging an Expense) */}
           {entryType === 'expense' && (
             <div>
               <label
@@ -350,7 +275,6 @@ export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
             </div>
           )}
 
-          {/* Date & Optional Note Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label
@@ -377,7 +301,7 @@ export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
               <input
                 id="entry-note-input"
                 type="text"
-                placeholder="Tax note, client, or memo"
+                placeholder="Client, invoice, or memo"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 className="w-full min-h-[48px] px-3.5 rounded-2xl bg-white border border-black/10 text-sm text-[#141518]"
@@ -385,20 +309,19 @@ export const EntrySheetModal: React.FC<EntrySheetModalProps> = ({
             </div>
           </div>
 
-          {/* Submit Action */}
           <div className="pt-2">
             <button
               type="submit"
               className={`w-full min-h-[52px] rounded-2xl font-semibold text-sm text-white shadow-md transition-transform active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2 ${
                 entryType === 'income'
-                  ? 'bg-[#10B981] hover:bg-[#059669]'
+                  ? 'bg-[#10B981] hover:bg-[#059669] text-[#141518]'
                   : 'bg-[#141518] hover:bg-[#272930]'
               }`}
             >
               {entryType === 'income' ? (
                 <>
                   <ArrowUpRight className="w-4 h-4" />
-                  <span>Save Salary / Income Entry</span>
+                  <span>Save Income Entry</span>
                 </>
               ) : (
                 <>

@@ -4,7 +4,7 @@ export interface IncomeSourceConfig {
   id: string;
   name: string;
   color: string;
-  tag: string; // e.g. 'Salary', 'Freelance', 'Passive', 'Business', 'Bonus'
+  tag: string;
 }
 
 export interface ExpenseCategoryConfig {
@@ -19,7 +19,7 @@ export interface LedgerEntry {
   title: string;
   amount: number;
   date: string; // YYYY-MM-DD
-  /** For 'income', this is the income source ID. For 'expense', optional funding source ID */
+  /** For 'income', this is the income source ID ('src-stipend' | 'src-consulting'). For 'expense', funding source ID */
   sourceId: string;
   /** For 'expense', this is the expense category ID */
   categoryId?: string;
@@ -34,6 +34,8 @@ export interface SourceSplitItem {
   tag: string;
   color: string;
   totalAmount: number;
+  expensesFunded: number;
+  netBalance: number;
   percentageOfIncome: number;
   entryCount: number;
   averageEntry: number;
@@ -46,6 +48,7 @@ export interface CategorySplitItem {
   color: string;
   totalAmount: number;
   percentageOfExpenses: number;
+  percentageOfIncome: number;
   entryCount: number;
 }
 
@@ -62,111 +65,23 @@ export interface FinancialSummary {
   topExpenseCategory: CategorySplitItem | null;
 }
 
+export const CURRENCY_SYMBOL = '₹';
+
 export const DEFAULT_INCOME_SOURCES: IncomeSourceConfig[] = [
-  { id: 'src-salary', name: 'Primary Tech Salary', color: '#10B981', tag: 'Base Salary' },
-  { id: 'src-freelance', name: 'Design & Dev Retainer', color: '#3B82F6', tag: 'Freelance' },
-  { id: 'src-saas', name: 'Micro-SaaS Templates', color: '#8B5CF6', tag: 'Side Business' },
-  { id: 'src-dividends', name: 'ETF & High-Yield Vault', color: '#F59E0B', tag: 'Passive Yield' },
-  { id: 'src-bonus', name: 'Performance & Spot Bonus', color: '#EC4899', tag: 'Bonus' },
+  { id: 'src-stipend', name: 'Stipend', color: '#10B981', tag: 'Stipend' },
+  { id: 'src-consulting', name: 'Consulting', color: '#3B82F6', tag: 'Consulting' },
 ];
 
 export const DEFAULT_EXPENSE_CATEGORIES: ExpenseCategoryConfig[] = [
-  { id: 'cat-housing', name: 'Housing & Studio', color: '#F43F5E' },
-  { id: 'cat-food', name: 'Dining & Groceries', color: '#FB923C' },
-  { id: 'cat-software', name: 'Cloud & Subscriptions', color: '#6366F1' },
-  { id: 'cat-transport', name: 'Transit & Mobility', color: '#14B8A6' },
-  { id: 'cat-lifestyle', name: 'Gear & Lifestyle', color: '#A855F7' },
+  { id: 'cat-housing', name: 'Housing & Rent', color: '#F43F5E' },
+  { id: 'cat-food', name: 'Groceries & Dining', color: '#FB923C' },
+  { id: 'cat-software', name: 'Work & Subscriptions', color: '#6366F1' },
+  { id: 'cat-transport', name: 'Transit & Travel', color: '#14B8A6' },
+  { id: 'cat-lifestyle', name: 'Shopping & Personal', color: '#A855F7' },
   { id: 'cat-utilities', name: 'Bills & Utilities', color: '#64748B' },
 ];
 
-export const INITIAL_SEED_ENTRIES: LedgerEntry[] = [
-  {
-    id: 'ent-1',
-    type: 'income',
-    title: 'October Base Salary Payout',
-    amount: 5400,
-    date: '2026-10-01',
-    sourceId: 'src-salary',
-    note: 'Direct deposit after tax',
-  },
-  {
-    id: 'ent-2',
-    type: 'income',
-    title: 'iOS UI Kit Client Retainer',
-    amount: 1850,
-    date: '2026-10-06',
-    sourceId: 'src-freelance',
-    note: 'Monthly product design advisory',
-  },
-  {
-    id: 'ent-3',
-    type: 'income',
-    title: 'Figma & Framer Component Sales',
-    amount: 920,
-    date: '2026-10-11',
-    sourceId: 'src-saas',
-    note: 'Gumroad + LemonSqueezy payout',
-  },
-  {
-    id: 'ent-4',
-    type: 'income',
-    title: 'Quarterly Treasury & ETF Yield',
-    amount: 430,
-    date: '2026-10-14',
-    sourceId: 'src-dividends',
-    note: 'Automated dividend distribution',
-  },
-  {
-    id: 'ent-5',
-    type: 'expense',
-    title: 'Loft Apartment Rent',
-    amount: 1950,
-    date: '2026-10-02',
-    sourceId: 'src-salary',
-    categoryId: 'cat-housing',
-    note: 'Monthly lease payment',
-  },
-  {
-    id: 'ent-6',
-    type: 'expense',
-    title: 'Organic Market & Matcha Bar',
-    amount: 420,
-    date: '2026-10-08',
-    sourceId: 'src-salary',
-    categoryId: 'cat-food',
-    note: 'Weekly groceries and coffee runs',
-  },
-  {
-    id: 'ent-7',
-    type: 'expense',
-    title: 'Vercel, Figma & AI Compute',
-    amount: 165,
-    date: '2026-10-12',
-    sourceId: 'src-freelance',
-    categoryId: 'cat-software',
-    note: 'Creator stack subscriptions',
-  },
-  {
-    id: 'ent-8',
-    type: 'expense',
-    title: 'Metro Pass & Airport Ride',
-    amount: 140,
-    date: '2026-10-16',
-    sourceId: 'src-saas',
-    categoryId: 'cat-transport',
-    note: 'City transit card reload',
-  },
-  {
-    id: 'ent-9',
-    type: 'expense',
-    title: 'Fiber Internet & Electricity',
-    amount: 175,
-    date: '2026-10-18',
-    sourceId: 'src-salary',
-    categoryId: 'cat-utilities',
-    note: 'Home studio utilities',
-  },
-];
+export const INITIAL_SEED_ENTRIES: LedgerEntry[] = [];
 
 export function filterEntriesByMonth(entries: LedgerEntry[], monthFilter: string): LedgerEntry[] {
   if (!monthFilter || monthFilter === 'all') {
@@ -180,6 +95,7 @@ export function computeIncomeSplitup(
   sources: IncomeSourceConfig[]
 ): SourceSplitItem[] {
   const incomeEntries = entries.filter((e) => e.type === 'income');
+  const expenseEntries = entries.filter((e) => e.type === 'expense');
   const totalIncome = incomeEntries.reduce((sum, e) => sum + e.amount, 0);
 
   const sourceMap = new Map<string, SourceSplitItem>();
@@ -191,6 +107,8 @@ export function computeIncomeSplitup(
       tag: src.tag,
       color: src.color,
       totalAmount: 0,
+      expensesFunded: 0,
+      netBalance: 0,
       percentageOfIncome: 0,
       entryCount: 0,
       averageEntry: 0,
@@ -199,24 +117,19 @@ export function computeIncomeSplitup(
   }
 
   for (const entry of incomeEntries) {
-    let bucket = sourceMap.get(entry.sourceId);
-    if (!bucket) {
-      bucket = {
-        sourceId: entry.sourceId,
-        name: 'Other Income Source',
-        tag: 'Custom',
-        color: '#10B981',
-        totalAmount: 0,
-        percentageOfIncome: 0,
-        entryCount: 0,
-        averageEntry: 0,
-        entries: [],
-      };
-      sourceMap.set(entry.sourceId, bucket);
+    const bucket = sourceMap.get(entry.sourceId) || sourceMap.get('src-stipend');
+    if (bucket) {
+      bucket.totalAmount += entry.amount;
+      bucket.entryCount += 1;
+      bucket.entries.push(entry);
     }
-    bucket.totalAmount += entry.amount;
-    bucket.entryCount += 1;
-    bucket.entries.push(entry);
+  }
+
+  for (const exp of expenseEntries) {
+    const bucket = sourceMap.get(exp.sourceId);
+    if (bucket) {
+      bucket.expensesFunded += exp.amount;
+    }
   }
 
   const result: SourceSplitItem[] = [];
@@ -225,6 +138,7 @@ export function computeIncomeSplitup(
     const avg = item.entryCount > 0 ? item.totalAmount / item.entryCount : 0;
     result.push({
       ...item,
+      netBalance: Number((item.totalAmount - item.expensesFunded).toFixed(2)),
       percentageOfIncome: Number(pct.toFixed(1)),
       averageEntry: Number(avg.toFixed(2)),
     });
@@ -237,7 +151,9 @@ export function computeExpenseSplitup(
   entries: LedgerEntry[],
   categories: ExpenseCategoryConfig[]
 ): CategorySplitItem[] {
+  const incomeEntries = entries.filter((e) => e.type === 'income');
   const expenseEntries = entries.filter((e) => e.type === 'expense');
+  const totalIncome = incomeEntries.reduce((sum, e) => sum + e.amount, 0);
   const totalExpenses = expenseEntries.reduce((sum, e) => sum + e.amount, 0);
 
   const catMap = new Map<string, CategorySplitItem>();
@@ -248,6 +164,7 @@ export function computeExpenseSplitup(
       color: cat.color,
       totalAmount: 0,
       percentageOfExpenses: 0,
+      percentageOfIncome: 0,
       entryCount: 0,
     });
   }
@@ -262,6 +179,7 @@ export function computeExpenseSplitup(
         color: '#64748B',
         totalAmount: 0,
         percentageOfExpenses: 0,
+        percentageOfIncome: 0,
         entryCount: 0,
       };
       catMap.set(key, bucket);
@@ -272,10 +190,12 @@ export function computeExpenseSplitup(
 
   const result: CategorySplitItem[] = [];
   for (const item of catMap.values()) {
-    const pct = totalExpenses > 0 ? (item.totalAmount / totalExpenses) * 100 : 0;
+    const pctExp = totalExpenses > 0 ? (item.totalAmount / totalExpenses) * 100 : 0;
+    const pctInc = totalIncome > 0 ? (item.totalAmount / totalIncome) * 100 : 0;
     result.push({
       ...item,
-      percentageOfExpenses: Number(pct.toFixed(1)),
+      percentageOfExpenses: Number(pctExp.toFixed(1)),
+      percentageOfIncome: Number(pctInc.toFixed(1)),
     });
   }
 
@@ -329,47 +249,45 @@ export function getMascotState(
   if (justAddedType === 'income') {
     return {
       mood: 'celebrating',
-      headline: 'Fresh inflow locked in!',
-      subline: `Koko just stacked your new income stream. Balance left is now ${summary.retentionRatio}% of total earned.`,
-      badgeText: 'Inflow Boost',
+      headline: 'New income recorded!',
+      subline: `Koko updated your balance. You have ${formatINR(summary.balanceLeft)} (${summary.retentionRatio}%) remaining.`,
+      badgeText: 'Inflow Added',
     };
   }
 
   if (summary.totalEarned === 0 && summary.totalSpent === 0) {
     return {
       mood: 'steady',
-      headline: 'Koko is ready for your first paycheck.',
-      subline: 'Tap "+ Add Salary" below to log your primary salary or side income streams.',
-      badgeText: 'Ready',
+      headline: 'Ready to track Stipend & Consulting.',
+      subline: 'Tap "+ Add Income" above to log your Stipend or Consulting inflow, or "+ Add Expense" to record spending.',
+      badgeText: 'Fresh Ledger',
     };
   }
 
   if (summary.balanceLeft < 0 || (summary.totalEarned === 0 && summary.totalSpent > 0)) {
     return {
       mood: 'overdrawn',
-      headline: 'Expenses outpaced total earned!',
-      subline: 'Your balance dipped below zero. Check the Splitup tab to review top spending or log new income.',
-      badgeText: 'Over Budget',
+      headline: 'Expenses exceeded total earned!',
+      subline: 'Your balance is below zero. Review the Splitup & Tables tab or log your latest Stipend / Consulting payout.',
+      badgeText: 'Overdrawn',
     };
   }
 
   if (summary.retentionRatio >= 55) {
-    const topSrc = summary.topIncomeSource ? summary.topIncomeSource.name : 'your streams';
+    const topSrc = summary.topIncomeSource ? summary.topIncomeSource.name : 'your sources';
     return {
       mood: 'thriving',
-      headline: `Keeping ${summary.retentionRatio}% of what you earn!`,
-      subline: `${summary.activeSourcesCount} active income ${
-        summary.activeSourcesCount === 1 ? 'source' : 'sources'
-      } led by ${topSrc}. Cushion looks super healthy.`,
-      badgeText: 'Thriving Cushion',
+      headline: `Retaining ${summary.retentionRatio}% of total earned!`,
+      subline: `Led by ${topSrc}. Your remaining balance is ${formatINR(summary.balanceLeft)}.`,
+      badgeText: 'Healthy',
     };
   }
 
   if (summary.retentionRatio >= 25) {
     return {
       mood: 'steady',
-      headline: `Balanced runway — ${summary.retentionRatio}% left.`,
-      subline: `You've spent ${summary.spentRatio}% of total earned across ${summary.expenseCount} expenses. Pace is steady.`,
+      headline: `Balanced pace — ${summary.retentionRatio}% left.`,
+      subline: `You have spent ${summary.spentRatio}% of total earned across ${summary.expenseCount} expenses.`,
       badgeText: 'Steady Pace',
     };
   }
@@ -377,8 +295,8 @@ export function getMascotState(
   return {
     mood: 'mindful',
     headline: `Tight buffer — ${summary.retentionRatio}% left.`,
-    subline: 'Most of your earned income is spoken for. Keep discretionary expenses light this cycle.',
-    badgeText: 'Mindful Mode',
+    subline: 'Most of your Stipend and Consulting income is spent for this period.',
+    badgeText: 'Low Cushion',
   };
 }
 
@@ -401,7 +319,7 @@ export function validateLedgerInput(params: {
 
   const numericAmount = Number(params.amountStr);
   if (!params.amountStr.trim() || Number.isNaN(numericAmount) || numericAmount <= 0) {
-    return { valid: false, error: 'Please enter an amount greater than 0.' };
+    return { valid: false, error: 'Please enter an amount in INR greater than 0.' };
   }
 
   if (numericAmount > 999999999) {
@@ -409,7 +327,7 @@ export function validateLedgerInput(params: {
   }
 
   if (!params.sourceId.trim()) {
-    return { valid: false, error: 'Please choose an income source.' };
+    return { valid: false, error: 'Please choose Stipend or Consulting.' };
   }
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(params.date)) {
@@ -422,12 +340,16 @@ export function validateLedgerInput(params: {
   };
 }
 
-export function formatCurrency(amount: number, symbol = '$'): string {
+export function formatINR(amount: number): string {
   const isNegative = amount < 0;
   const absVal = Math.abs(amount);
-  const formatted = absVal.toLocaleString('en-US', {
+  const formatted = absVal.toLocaleString('en-IN', {
     minimumFractionDigits: absVal % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   });
-  return `${isNegative ? '-' : ''}${symbol}${formatted}`;
+  return `${isNegative ? '-' : ''}₹${formatted}`;
+}
+
+export function formatCurrency(amount: number): string {
+  return formatINR(amount);
 }

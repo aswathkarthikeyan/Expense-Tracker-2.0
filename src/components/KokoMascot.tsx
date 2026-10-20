@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Volume2 } from 'lucide-react';
 import {
-  formatCurrency,
+  formatINR,
   type FinancialSummary,
   type MascotMood,
 } from '../utils/finance';
@@ -12,7 +12,6 @@ interface KokoMascotProps {
   subline: string;
   badgeText: string;
   summary: FinancialSummary;
-  currencySymbol: string;
   onQuickAddIncome: () => void;
   onOpenSplitup: () => void;
 }
@@ -23,7 +22,6 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
   subline,
   badgeText,
   summary,
-  currencySymbol,
   onOpenSplitup,
 }) => {
   const [pokeIndex, setPokeIndex] = useState(0);
@@ -33,11 +31,11 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
     subline,
     summary.topIncomeSource
       ? `Your #1 stream is ${summary.topIncomeSource.name} (${summary.topIncomeSource.percentageOfIncome}% of total earned).`
-      : 'Add multiple income sources to see your portfolio splitup.',
+      : 'Log your Stipend or Consulting income to see your splitup.',
     summary.topExpenseCategory
-      ? `Largest expense bucket: ${summary.topExpenseCategory.name} (${formatCurrency(summary.topExpenseCategory.totalAmount, currencySymbol)}).`
+      ? `Largest expense bucket: ${summary.topExpenseCategory.name} (${formatINR(summary.topExpenseCategory.totalAmount)}).`
       : 'No expenses logged yet — 100% of your income is untouched!',
-    `Net retention rate: ${summary.retentionRatio}% kept (${formatCurrency(summary.balanceLeft, currencySymbol)} balance left).`,
+    `Net retention rate: ${summary.retentionRatio}% kept (${formatINR(summary.balanceLeft)} balance left).`,
   ];
 
   const handlePokeMascot = () => {
@@ -109,7 +107,6 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
       className={`relative rounded-3xl border ${theme.borderTint} ${theme.surfaceTint} p-5 transition-colors duration-300`}
     >
       <div className="flex items-center gap-4">
-        {/* Interactive Mascot Avatar Button */}
         <button
           type="button"
           onClick={handlePokeMascot}
@@ -124,10 +121,8 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
             role="img"
             aria-label={`Koko mascot in ${mood} mood`}
           >
-            {/* Soft grounding shadow */}
             <ellipse cx="70" cy="126" rx="34" ry="6" fill="rgba(20,21,24,0.10)" />
 
-            {/* Cute sprout leaf on top of Koko's head */}
             <g className="origin-bottom transition-transform duration-300 group-hover:rotate-6">
               <path
                 d="M70 28 C70 12, 88 4, 98 11 C92 24, 80 28, 70 28 Z"
@@ -145,7 +140,6 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
               />
             </g>
 
-            {/* Main Mochi Spirit Body */}
             <path
               d="M24 78 C24 44, 44 28, 70 28 C96 28, 116 44, 116 78 C116 106, 100 120, 70 120 C40 120, 24 106, 24 78 Z"
               fill={theme.bodyFill}
@@ -153,7 +147,6 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
               strokeWidth="3.5"
             />
 
-            {/* Soft Cream Belly Patch */}
             <ellipse
               cx="70"
               cy="82"
@@ -162,7 +155,6 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
               fill={theme.bellyFill}
             />
 
-            {/* Little Stubby Arms */}
             <path
               d={
                 mood === 'celebrating' || mood === 'thriving'
@@ -186,10 +178,8 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
               fill="none"
             />
 
-            {/* Dynamic Eyes based on mood */}
             {mood === 'celebrating' ? (
               <>
-                {/* Happy curved star eyes */}
                 <path
                   d="M49 72 Q55 63 61 72"
                   stroke="#141518"
@@ -207,7 +197,6 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
               </>
             ) : mood === 'overdrawn' ? (
               <>
-                {/* Wide alert eyes + sweat drop */}
                 <circle cx="55" cy="72" r="6.5" fill="#141518" />
                 <circle cx="85" cy="72" r="6.5" fill="#141518" />
                 <circle cx="53" cy="70" r="2.2" fill="#FFFFFF" />
@@ -226,11 +215,9 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
               </>
             )}
 
-            {/* Rosy Cheeks */}
             <ellipse cx="44" cy="80" rx="6" ry="3.5" fill="#F43F5E" fillOpacity="0.35" />
             <ellipse cx="96" cy="80" rx="6" ry="3.5" fill="#F43F5E" fillOpacity="0.35" />
 
-            {/* Mouth Expression */}
             {mood === 'thriving' || mood === 'celebrating' ? (
               <path
                 d="M62 82 Q70 91 78 82"
@@ -273,7 +260,6 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
           </span>
         </button>
 
-        {/* Mascot Speech & Insight Column */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap truncate">
@@ -307,7 +293,7 @@ export const KokoMascot: React.FC<KokoMascotProps> = ({
               className="text-xs font-semibold text-[#141518] underline decoration-black/30 underline-offset-4 hover:decoration-black transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
             >
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span>View Income Splitup ({summary.activeSourcesCount} streams)</span>
+              <span>View Stipend & Consulting Splitup</span>
             </button>
           </div>
         </div>
